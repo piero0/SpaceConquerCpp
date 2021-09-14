@@ -1,54 +1,6 @@
-#include "univers.hpp"
-#include <iostream>
-#include <string>
+#include "tui.hpp"
 
 using namespace std::string_literals;
-
-class TUI {
-    const std::string LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    ushort XSIZE = 10;
-    ushort YSIZE = 10;
-
-    public:
-        TUI(ushort x, ushort y): XSIZE(x), YSIZE(y) {}
-
-        std::string makeHeader() {
-            std::string header = "   "s;
-            for(size_t x = 0; x < XSIZE; x++) {
-                header += LETTERS[x] + " "s;
-            }
-            return header;
-        }
-
-        void drawPlanets() {
-            std::string line = ""s;
-            std::string board = ""s;
-
-            std::string head = makeHeader();
-
-            board += head + "\n"s;
-
-            for (size_t y = YSIZE; y > 0; y--) {
-                auto ystr = std::to_string(y);
-                if(ystr.length() == 1) {
-                    ystr = " "s + ystr;
-                }
-
-                line = ystr + "|"s;
-                for (size_t x = 0; x < XSIZE; x++) {
-                    line += " |"s;
-                }
-                line += ystr + "\n"s;
-                board += line;
-            }
-
-            board += head + "\n"s;
-
-            board += "> command?\n";
-
-            std::cout << board;
-        }
-};
 
 /*
   A B C D E F G H
@@ -63,12 +15,55 @@ class TUI {
   A B C D E F G H
 */
 
-int main(int argc, char** argv) {
-    if(argc != 3) {
-        std::cout << argv[0] << " x y\n";
-        return 0;
+
+TUI::TUI(Universe& universe):m_universe(universe) {
+    m_cfg = universe.getConfig();
+    m_xsize = m_cfg.xsize;
+    m_ysize = m_cfg.ysize;
+}
+
+std::string TUI::makeHeader() {
+    std::string header = "   "s;
+    for(size_t x = 0; x < m_xsize; x++) {
+        header += LETTERS[x] + " "s;
+    }
+    return header;
+}
+
+std::vector<std::string> TUI::drawPlanets() {
+    std::string line = ""s;
+    std::string head = makeHeader();
+
+    std::vector<std::string> board;
+
+    board.emplace_back(head);
+
+    for (size_t y = m_ysize; y > 0; y--) {
+        auto ystr = std::to_string(y);
+        if(ystr.length() == 1) {
+            ystr = " "s + ystr;
+        }
+
+        line = ystr + "|"s;
+        for (size_t x = 0; x < m_xsize; x++) {
+            Position pos {x, y};
+            line += (m_universe.getPlanetByPos(pos) != nullptr) ? "o|"s : " |"s;                    
+        }
+        line += ystr;
+        board.emplace_back(line);
     }
 
-    auto t = TUI(std::atoi(argv[1]), std::atoi(argv[2]));
-    t.drawPlanets();
+    board.emplace_back(head);
+
+    board.emplace_back("> command?");
+
+    return board;
+}
+
+void TUI::drawBoard() {
+    auto planets = drawPlanets();
+
+    for(auto& line: planets) {
+        std::cout << line << "\n";
+    }
 }
