@@ -6,7 +6,7 @@ int main() {
     u.generatePlanets();
     TUI t(u);
 
-    t.drawBoard();
+    t.mainLoop();
 
     return 0;
 }

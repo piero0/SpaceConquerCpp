@@ -7,6 +7,8 @@
 #include <limits>
 #include <random>
 #include <iostream>
+#include <algorithm>
+#include <queue>
 
 using ushort = unsigned short;
 using Position = std::pair<ushort, ushort>;
@@ -24,10 +26,11 @@ struct Config {
 };
 
 struct Planet {
+    std::string name {""};
     Position position {0, 0};
     float production = 1.0f;
-    float sheeps_in_production = 0.0f;
-    ushort sheeps = 0;
+    float ships_in_production = 0.0f;
+    ushort ships = 0;
     ushort owner = 0;
 
     void nextRound();
@@ -35,23 +38,42 @@ struct Planet {
 
 struct Transport { // moze jakas lepsza nazwa ?? 
     ushort distance;
-    ushort sheeps;
+    ushort ships;
     Planet* destination;
+    Planet* source;
+};
+
+struct Event {
+    enum class Type {
+        REINFORCEMENTS,
+        ATTACK_FAIL,
+        ATTACK_OK,
+        WIN,
+        DEFEAT
+    };
+    Type type;
+    std::string message;
+
+    Event(Event::Type type, Transport& t);
 };
 
 class Universe {
     std::unordered_map<Position, Planet, PositionHash> m_planets;
     std::vector<Transport> m_transports;
+    std::queue<Event> m_events;
     Config m_cfg;
 
     public:
         Universe(const Config& cfg);
         ushort calcDistance(Planet* src, Planet* dst);
-        void makeTransport(Planet* src, Planet* dst, ushort sheeps);
+        void makeTransport(Planet* src, Planet* dst, ushort ships);
         Planet* getPlanetByPos(const Position& pos);
         Position convertToPosition(const std::string& pos);
         void generatePlanets();
         Position generatePosition(std::uniform_int_distribution<>& gx, std::uniform_int_distribution<>& gy, std::mt19937& gen);
         void assignPlayers();
         const Config& getConfig() const { return m_cfg; }
+        std::queue<Event>& getEvents() { return m_events; }
+        void nextRound();
+        void land(Transport& t);
 };

@@ -12,10 +12,14 @@ class TUI {
     Universe& m_universe;
     Config m_cfg;
     ushort m_xsize, m_ysize;
+    bool m_playing = true;
 
     public:
         TUI(Universe& universe);
         std::string makeHeader();
         std::vector<std::string> drawPlanets();
         void drawBoard();
+        Position convertToPosition(const std::string& location);
+        void mainLoop();
+        void processCommand(std::string& cmd);
 };
