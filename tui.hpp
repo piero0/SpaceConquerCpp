@@ -1,6 +1,7 @@
 #pragma once
 
 #include "universe.hpp"
+#include "tui_cmd.hpp"
 #include <iostream>
 #include <string>
 #include <vector>

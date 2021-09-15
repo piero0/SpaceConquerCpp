@@ -46,7 +46,7 @@ std::vector<std::string> TUI::drawPlanets() {
 
         line = ystr + "|"s;
         for (size_t x = 0; x < m_xsize; x++) {
-            Position pos {x, y};
+            Position pos {x+1, y};
             line += (m_universe.getPlanetByPos(pos) != nullptr) ? "o|"s : " |"s;                    
         }
         line += ystr;
@@ -87,16 +87,16 @@ Position TUI::convertToPosition(const std::string& location) {
 }
 
 void TUI::processCommand(std::string& cmd) {
-    if(cmd == "quit") {
+    if(cmd == "quit" || cmd[0] == 'q') {
         m_playing = false;
-    } else if(cmd.substr(0, 4) == "info") {
+    } else if(cmd[0] == 'i') {
         auto len = cmd.length();
-        if(len < 7) {
+        if(len < 4) {
             std::cout << "missing planet's position e.g. info A1\n";
             return;
         }
 
-        auto loc = cmd.substr(5, cmd.length() - 5);
+        auto loc = cmd.substr(2);
         auto pos = convertToPosition(loc);
         auto p = m_universe.getPlanetByPos(pos);
         if(p == nullptr) {
@@ -106,14 +106,16 @@ void TUI::processCommand(std::string& cmd) {
         
         //show ships and production only to owner
         std::cout << p->name << " owner: " << p->owner << " ships:" << p->ships << " prod: " << p->production << "\n";
-    } else if(cmd == "next") {
+    } else if(cmd == "next" || cmd[0] == 'n') {
         m_universe.nextRound();
+    } else if(cmd == "send" || cmd[0] == 's') {
+
     }
 }
 
 void TUI::mainLoop() {
     std::string cmd {""s};
-    while(m_playing) {
+    while(m_universe.isPlaying()) {
         drawBoard();
         std::cout << "> ";
         std::getline(std::cin, cmd);

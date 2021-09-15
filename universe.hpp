@@ -62,6 +62,7 @@ class Universe {
     std::vector<Transport> m_transports;
     std::queue<Event> m_events;
     Config m_cfg;
+    bool m_playing = true;
 
     public:
         Universe(const Config& cfg);
@@ -76,4 +77,7 @@ class Universe {
         std::queue<Event>& getEvents() { return m_events; }
         void nextRound();
         void land(Transport& t);
+        
+        bool isPlaying() const {return m_playing;}
+        void setPlaying(bool state) {m_playing = state;}
 };
