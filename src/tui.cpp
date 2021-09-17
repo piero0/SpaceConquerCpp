@@ -17,9 +17,13 @@ using namespace std::string_literals;
 
 TUI::TUI(Universe& universe, Callbacks* cbs):
     m_universe(universe), m_cmds(cbs) {
-    m_cfg = universe.getConfig();
-    m_xsize = m_cfg.xsize;
-    m_ysize = m_cfg.ysize;
+        reloadConfig();
+}
+
+void TUI::reloadConfig() {
+    m_cfg = m_universe.getConfig();
+    m_xsize = m_cfg->xsize;
+    m_ysize = m_cfg->ysize;
 }
 
 std::string TUI::makeHeader() {
@@ -58,6 +62,11 @@ std::vector<std::string> TUI::drawPlanets() {
     return board;
 }
 
+std::vector<std::string> TUI::drawEventLog() {
+    std::vector<std::string> log;
+    return log;
+}
+
 void TUI::drawBoard() {
     auto planets = drawPlanets();
 
@@ -71,6 +80,7 @@ void TUI::drawBoard() {
 void TUI::mainLoop() {
     std::string cmd {""s}, response {m_universe.getInitMsg()};
     while(m_universe.isPlaying()) {
+        reloadConfig();
         drawBoard();
         std::cout << response << "\n> ";
         std::getline(std::cin, cmd);

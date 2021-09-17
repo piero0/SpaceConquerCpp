@@ -26,12 +26,13 @@ class Callbacks {
         std::string send(Args args);
         std::string save(Args args);
         std::string load(Args args);
+        std::string newgame(Args args);
         std::string help(Args args);
 
         std::string debug(Args args);
         std::string reset(Args args);
 
-        std::array<Command, 9> commands {
+        std::array<Command, 10> commands {
             Command("quit"s, &Callbacks::quit, "q"),
             Command("info"s, &Callbacks::info, "i"),
             Command("next"s, &Callbacks::next, "n"),
@@ -40,6 +41,7 @@ class Callbacks {
             Command("reset"s, &Callbacks::reset, "r"),
             Command("help"s, &Callbacks::help, "?"),
             Command("save"s, &Callbacks::save),
-            Command("load"s, &Callbacks::load)
+            Command("load"s, &Callbacks::load),
+            Command("newgame"s, &Callbacks::newgame)
         };
 };

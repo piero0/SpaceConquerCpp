@@ -15,7 +15,7 @@ std::string Callbacks::info(Args args) {
     
     //show ships and production only to owner
     std::ostringstream tmp; 
-    tmp << p->name << " owner: "s << p->owner << " ships:"s << p->ships << " prod: "s << p->production;
+    tmp << m_universe->positionToString(p->position) << " owner: "s << p->owner << " ships:"s << p->ships << " prod: "s << p->production;
     return tmp.str();
 }
 
@@ -27,7 +27,7 @@ std::string Callbacks::quit(Args args) {
 std::string Callbacks::next(Args args) {
     std::ostringstream tmp;
     m_universe->nextRound();
-    tmp << "Next Round #" << m_universe->getRoundCount();
+    tmp << "Round #" << m_universe->getRoundCount();
     return tmp.str();
 }
 
@@ -78,6 +78,10 @@ std::string Callbacks::help(Args args) {
 
 std::string Callbacks::debug(Args args) {
     std::ostringstream tmp;
+
+    auto cfg = m_universe->getConfig();
+    tmp << "Map size " << cfg->xsize << "x" << cfg->ysize << " planets: " << cfg->planets_num << "\n";
+
     for(auto& pl: m_universe->getPlanets()) {
         auto p = pl.second;
         tmp << p.name << " owner: "s << p.owner << " ships:"s << p.ships << " prod: "s << p.production << "\n";
@@ -99,4 +103,45 @@ std::string Callbacks::save(Args args) {
 
 std::string Callbacks::load(Args args) {
     return "Not implemented"s;
+}
+
+std::string Callbacks::newgame(Args args) {
+    std::string msg;
+    ushort x = 10, y = 10, pnum = 10;
+
+    switch(args.size()) {
+        case 1:
+            break; //use defaults
+        case 3:
+            x = std::atoi(args[1].c_str());
+            y = std::atoi(args[2].c_str());
+            break;
+        case 4:
+            x = std::atoi(args[1].c_str());
+            y = std::atoi(args[2].c_str());
+            pnum = std::atoi(args[3].c_str());
+            break;
+        default:
+            return "Invalid format: newgame XSIZE YSIZE [PLANETS]";
+            break;
+    };
+
+    const ushort MAX_SIZE = m_universe->getMaxSize();
+
+    if(x < 1 || x > MAX_SIZE || y < 1 || y > MAX_SIZE) {
+        return "Invalid map size: 1 <= x,y << " + std::to_string(MAX_SIZE);
+    }
+
+    if(pnum > x*y*0.8 || pnum < 3) {
+        return "Invalid number of planets: 3 < planets < 80% of x*y";
+    }
+
+    auto cfg = m_universe->getConfig();
+    cfg->planets_num = pnum;
+    cfg->xsize = x;
+    cfg->ysize = y;
+
+    m_universe->generatePlanets();
+
+    return m_universe->getInitMsg();
 }

@@ -3,12 +3,10 @@
 int main() {
     Config cfg;
     Universe u(cfg);
-    u.generatePlanets();
-
     Callbacks cbs(&u);
-    TUI t(u, &cbs);
+    TUI tui(u, &cbs);
 
-    t.mainLoop();
+    tui.mainLoop();
 
     return 0;
 }

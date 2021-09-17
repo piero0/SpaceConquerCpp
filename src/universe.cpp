@@ -74,7 +74,7 @@ std::vector<Planet> Universe::getUserPlanets(ushort user_id) {
 void Universe::reset() {
     m_planets.clear();
     m_transports.clear();
-    m_events = std::queue<Event>();
+    m_events.clear();
     m_round = 1;
     m_playing = true;
 }
@@ -104,7 +104,7 @@ void Universe::land(Transport& t) { //jakas lepsza nazwa
     if(t.source == t.destination) {
         t.destination->ships += t.ships;
 
-        m_events.push(Event(Event::Type::REINFORCEMENTS, t));
+        m_events.push_back(Event(Event::Type::REINFORCEMENTS, &t));
         return;
     }
 
@@ -113,9 +113,9 @@ void Universe::land(Transport& t) { //jakas lepsza nazwa
         t.destination->owner = t.source->owner;
         t.destination->ships = dif;
 
-        m_events.push(Event(Event::Type::ATTACK_OK, t));
+        m_events.push_back(Event(Event::Type::ATTACK_OK, &t));
     } else {
-        m_events.push(Event(Event::Type::ATTACK_FAIL, t));
+        m_events.push_back(Event(Event::Type::ATTACK_FAIL, &t));
     }
 }
 
@@ -133,19 +133,30 @@ void Universe::nextRound() {
         p.second.nextRound();
     }
 
+    checkGameEnded();
+
     m_round++;
 }
 
-Event::Event(Event::Type type, Transport& t) {
+Event::Event(Event::Type type, Transport* t) {
     switch(type) {
     case Event::Type::REINFORCEMENTS:
-        message = std::to_string(t.ships) + " ships arrived on " + t.destination->name;
+        message = std::to_string(t->ships) + " ships arrived on " + t->destination->name;
         break;
     case Event::Type::ATTACK_OK:
-        message = "Planet " + t.destination->name + " taken over";
+        message = "Planet " + t->destination->name + " taken over";
         break;
     case Event::Type::ATTACK_FAIL:
-        message = "Attack on " + t.destination->name + " failed";
+        message = "Attack on " + t->destination->name + " failed";
+        break;
+    case Event::Type::WIN:
+        message = "Congratulation, you won!";
+        break;
+    case Event::Type::DOMINATION:
+        message = "You have defated all opponents but there are still some planets to conquer";
+        break;
+    case Event::Type::DEFEAT:
+        message = "You have been defeated";
         break;
     
     default:
@@ -181,7 +192,17 @@ std::string Universe::positionToString(const Position& pos) {
 
 std::string Universe::getInitMsg() {
     std::ostringstream msg;
-    auto start_pos = positionToString(getUserPlanets(1)[0].position);
-    msg << "Welcome Konqueror, your starting planet is at " << start_pos;
+    auto user_planets = getUserPlanets(1);
+    if(user_planets.size() == 0) {
+        msg << "Type 'newgame' to start a new game or 'load' to load saved one";
+    } else {
+        auto start_pos = positionToString(user_planets[0].position);
+        msg << "Round #1\nWelcome Konqueror, your starting planet is at " << start_pos;
+    }
+
     return msg.str();
+}
+
+void Universe::checkGameEnded() {
+    //todo
 }

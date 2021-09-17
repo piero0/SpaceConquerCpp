@@ -4,17 +4,22 @@ TUICmds::TUICmds(Callbacks* cb): m_callbacks(cb) {
     addCommands(m_callbacks->commands.begin(), m_callbacks->commands.end());
 }
 
-bool TUICmds::match(std::string& cmd, Command& c) {
-    if(cmd.length() == 0) return false;
+Command* TUICmds::findCommand(std::string& cmd) {
+    auto idx = m_long_names.find(cmd);
 
-    if(cmd.substr(0, c.short_name.length()) == c.short_name || cmd.substr(0, c.name.length()) == c.name) {
-        return true;
+    if(idx != m_long_names.end()) {
+        return &m_commands[idx->second];
     }
-    
-    return false;
+
+    idx = m_short_names.find(cmd);
+    if(idx != m_short_names.end()) {
+        return &m_commands[idx->second];
+    }
+
+    return nullptr;
 }
 
-Args TUICmds::getArgs(std::string& cmd) {
+Args TUICmds::splitArgs(std::string& cmd) {
     Args args;
     size_t epos = 0, spos = 0;
 
@@ -27,24 +32,29 @@ Args TUICmds::getArgs(std::string& cmd) {
     return args;
 }
 
-std::string TUICmds::parseCommandLine(std::string& cmd) {
+std::string TUICmds::parseCommandLine(std::string& cmdline) {
     auto response {""s};
-    for(auto& c: m_commands) {
-        auto args = getArgs(cmd);
-        if(match(args[0], c)) {
-            response = std::invoke(c.callback, m_callbacks, args);
-            break;
-        }
+
+    auto args = splitArgs(cmdline);
+    auto cmd = findCommand(args[0]);
+    if(cmd != nullptr) {
+        response = std::invoke(cmd->callback, m_callbacks, args);
     }
+
     return response;
 }
 
-void TUICmds::addCommand(Command& cmd) {
-    m_commands.push_back(cmd);
-}
-
 template<class Iter> void TUICmds::addCommands(Iter begin, Iter end) {
+    size_t idx = 0;
     while(begin != end) {
-        m_commands.push_back(*begin++);
+        m_commands.push_back(*begin);
+        m_long_names[begin->name] = idx;
+
+        if(begin->short_name != "") {
+            m_short_names[begin->short_name] = idx;
+        }
+
+        begin++;
+        idx++;
     }
 }

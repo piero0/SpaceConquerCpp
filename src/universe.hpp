@@ -51,18 +51,19 @@ struct Event {
         ATTACK_FAIL,
         ATTACK_OK,
         WIN,
+        DOMINATION,
         DEFEAT
     };
     Type type;
     std::string message;
 
-    Event(Event::Type type, Transport& t);
+    Event(Event::Type type, Transport* t);
 };
 
 class Universe {
     std::unordered_map<Position, Planet, PositionHash> m_planets;
     std::vector<Transport> m_transports;
-    std::queue<Event> m_events;
+    std::vector<Event> m_events;
     Config m_cfg;
     ushort m_round = 1;
     bool m_playing = true;
@@ -70,6 +71,7 @@ class Universe {
     public:
         Universe(const Config& cfg);
         void reset();
+        void checkGameEnded();
 
         ushort calcDistance(Planet* src, Planet* dst);
         Transport* makeTransport(Planet* src, Planet* dst, ushort ships);
@@ -85,8 +87,8 @@ class Universe {
         Position generatePosition(std::uniform_int_distribution<>& gx, std::uniform_int_distribution<>& gy, std::mt19937& gen);
         void assignPlayers();
         
-        const Config& getConfig() const { return m_cfg; }
-        std::queue<Event>& getEvents() { return m_events; }
+        Config* getConfig() { return &m_cfg; }
+        std::vector<Event>& getEvents() { return m_events; }
 
         void land(Transport& t);
         void nextRound();
@@ -96,7 +98,9 @@ class Universe {
         void setPlaying(bool state) {m_playing = state;}
         
         std::unordered_map<Position, Planet, PositionHash> getPlanets() { return m_planets; }
-        std::vector<Transport> getTransports() { return m_transports; }
+        std::vector<Transport>& getTransports() { return m_transports; }
 
         std::string getInitMsg();
+
+        ushort getMaxSize() const { return 26; }
 };
