@@ -61,13 +61,15 @@ std::vector<std::string> TUI::drawPlanets() {
 void TUI::drawBoard() {
     auto planets = drawPlanets();
 
+    std::cout << "\n";
     for(auto& line: planets) {
         std::cout << line << "\n";
     }
+    std::cout << "\n";
 }
 
 void TUI::mainLoop() {
-    std::string cmd {""s}, response {""s};
+    std::string cmd {""s}, response {m_universe.getInitMsg()};
     while(m_universe.isPlaying()) {
         drawBoard();
         std::cout << response << "\n> ";

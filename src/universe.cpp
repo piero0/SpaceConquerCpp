@@ -5,6 +5,15 @@ void Planet::nextRound() {
     ships = static_cast<ushort>(std::floor(ships_in_production));
 }
 
+bool Planet::sendShips(ushort ships_num) {
+    if(ships_num > ships) return false;
+
+    ships -= ships_num;
+    ships_in_production -= static_cast<float>(ships_num);
+
+    return true;
+}
+
 Universe::Universe(const Config& cfg) {
         m_cfg = cfg;
 }
@@ -15,14 +24,22 @@ ushort Universe::calcDistance(Planet* src, Planet* dst) {
     return static_cast<ushort>(std::ceil(std::sqrt(x2*x2 + y2*y2)));
 }
 
-void Universe::makeTransport(Planet* src, Planet* dst, ushort ships) {
+Transport* Universe::makeTransport(Planet* src, Planet* dst, ushort ships) {
     // sprawdzic emplace_back ? czy potrzebuje konstruktor
+    if(!src->sendShips(ships)) {
+        return nullptr;
+    }
     m_transports.push_back({calcDistance(src, dst), ships, dst, src});
+    return &m_transports.back();
 }
 
 Planet* Universe::getPlanetByPos(const Position& pos) {
     auto it = m_planets.find(pos);
     return (it != m_planets.end()) ? &it->second: nullptr;
+}
+
+Planet* Universe::getPlanetAt(const std::string& loc) {
+    return getPlanetByPos(convertToPosition(loc));
 }
 
 Position Universe::generatePosition(std::uniform_int_distribution<>& gx, std::uniform_int_distribution<>& gy, std::mt19937& gen) {
@@ -41,12 +58,30 @@ void Universe::assignPlayers() {
         p.second.production = 0.5f;
         p.second.ships = 10;
         p.second.ships_in_production = 10.0f;
-        std::cout << "owner: " << p.second.owner << " " << p.first.first << "x" << p.first.second << "\n";
+
         if(idx == 2) break;
     }
 }
 
+std::vector<Planet> Universe::getUserPlanets(ushort user_id) {
+    std::vector<Planet> user_planets;
+    for(auto& p: m_planets) {
+        user_planets.push_back(p.second);
+    }
+    return user_planets;
+}
+
+void Universe::reset() {
+    m_planets.clear();
+    m_transports.clear();
+    m_events = std::queue<Event>();
+    m_round = 1;
+    m_playing = true;
+}
+
 void Universe::generatePlanets() {
+    reset();
+
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> genx(1, m_cfg.xsize);
@@ -57,9 +92,6 @@ void Universe::generatePlanets() {
         Planet p;
         p.production = genprod(gen);
         p.position = generatePosition(genx, geny, gen);
-
-        std::cout << "prod: " << p.production << " pos: " << p.position.first << "x" << p.position.second << "\n";
-
         p.name = std::to_string(p.position.first) + "x" + std::to_string(p.position.second);
 
         m_planets[p.position] = p;
@@ -100,6 +132,8 @@ void Universe::nextRound() {
     for(auto& p: m_planets) {
         p.second.nextRound();
     }
+
+    m_round++;
 }
 
 Event::Event(Event::Type type, Transport& t) {
@@ -137,4 +171,17 @@ Position Universe::convertToPosition(const std::string& location) {
     }
 
     return pos;
+}
+
+std::string Universe::positionToString(const Position& pos) {
+    std::ostringstream msg;
+    msg << static_cast<char>('A' + pos.first - 1) << std::to_string(pos.second);
+    return msg.str();
+}
+
+std::string Universe::getInitMsg() {
+    std::ostringstream msg;
+    auto start_pos = positionToString(getUserPlanets(1)[0].position);
+    msg << "Welcome Konqueror, your starting planet is at " << start_pos;
+    return msg.str();
 }

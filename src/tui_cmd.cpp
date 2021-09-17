@@ -7,7 +7,7 @@ TUICmds::TUICmds(Callbacks* cb): m_callbacks(cb) {
 bool TUICmds::match(std::string& cmd, Command& c) {
     if(cmd.length() == 0) return false;
 
-    if(cmd[0] == c.name[0] || cmd.substr(0, c.name.length()) == c.name) {
+    if(cmd.substr(0, c.short_name.length()) == c.short_name || cmd.substr(0, c.name.length()) == c.name) {
         return true;
     }
     
@@ -33,6 +33,7 @@ std::string TUICmds::parseCommandLine(std::string& cmd) {
         auto args = getArgs(cmd);
         if(match(args[0], c)) {
             response = std::invoke(c.callback, m_callbacks, args);
+            break;
         }
     }
     return response;

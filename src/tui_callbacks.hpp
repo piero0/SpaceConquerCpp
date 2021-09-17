@@ -10,8 +10,9 @@ using namespace std::string_literals;
 struct Command {
     std::string name = "???";
     Callback callback;
+    std::string short_name = "?";
 
-    Command(std::string n, Callback c): name(n), callback(c) {}
+    Command(std::string n, Callback c, std::string s=""): name(n), callback(c), short_name(s) {}
 };
 
 class Callbacks {
@@ -23,15 +24,22 @@ class Callbacks {
         std::string quit(Args args);
         std::string next(Args args);
         std::string send(Args args);
-        std::string debug(Args args);
+        std::string save(Args args);
+        std::string load(Args args);
         std::string help(Args args);
 
-        std::array<Command, 6> commands {
-            Command("quit"s, &Callbacks::quit),
-            Command("info"s, &Callbacks::info),
-            Command("next"s, &Callbacks::next),
-            Command("send"s, &Callbacks::send),
-            Command("debug"s, &Callbacks::debug),
-            Command("help"s, &Callbacks::help),
+        std::string debug(Args args);
+        std::string reset(Args args);
+
+        std::array<Command, 9> commands {
+            Command("quit"s, &Callbacks::quit, "q"),
+            Command("info"s, &Callbacks::info, "i"),
+            Command("next"s, &Callbacks::next, "n"),
+            Command("send"s, &Callbacks::send, "s"),
+            Command("debug"s, &Callbacks::debug, "d"),
+            Command("reset"s, &Callbacks::reset, "r"),
+            Command("help"s, &Callbacks::help, "?"),
+            Command("save"s, &Callbacks::save),
+            Command("load"s, &Callbacks::load)
         };
 };

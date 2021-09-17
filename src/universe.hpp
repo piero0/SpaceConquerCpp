@@ -9,6 +9,7 @@
 #include <iostream>
 #include <algorithm>
 #include <queue>
+#include <sstream>
 
 using ushort = unsigned short;
 using Position = std::pair<ushort, ushort>;
@@ -34,6 +35,7 @@ struct Planet {
     ushort owner = 0;
 
     void nextRound();
+    bool sendShips(ushort ships_num);
 };
 
 struct Transport { // moze jakas lepsza nazwa ?? 
@@ -62,25 +64,39 @@ class Universe {
     std::vector<Transport> m_transports;
     std::queue<Event> m_events;
     Config m_cfg;
+    ushort m_round = 1;
     bool m_playing = true;
 
     public:
         Universe(const Config& cfg);
+        void reset();
+
         ushort calcDistance(Planet* src, Planet* dst);
-        void makeTransport(Planet* src, Planet* dst, ushort ships);
+        Transport* makeTransport(Planet* src, Planet* dst, ushort ships);
+
+        Position convertToPosition(const std::string& location);
+        std::string positionToString(const Position& pos);
+
         Planet* getPlanetByPos(const Position& pos);
+        Planet* getPlanetAt(const std::string& loc);
+        std::vector<Planet> getUserPlanets(ushort user_id);
+
         void generatePlanets();
         Position generatePosition(std::uniform_int_distribution<>& gx, std::uniform_int_distribution<>& gy, std::mt19937& gen);
         void assignPlayers();
+        
         const Config& getConfig() const { return m_cfg; }
         std::queue<Event>& getEvents() { return m_events; }
-        void nextRound();
+
         void land(Transport& t);
+        void nextRound();
+        ushort getRoundCount() const {return m_round;}
         
         bool isPlaying() const {return m_playing;}
         void setPlaying(bool state) {m_playing = state;}
-
-        Position convertToPosition(const std::string& location);
+        
         std::unordered_map<Position, Planet, PositionHash> getPlanets() { return m_planets; }
         std::vector<Transport> getTransports() { return m_transports; }
+
+        std::string getInitMsg();
 };
