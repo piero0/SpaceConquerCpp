@@ -64,16 +64,40 @@ std::vector<std::string> TUI::drawPlanets() {
 
 std::vector<std::string> TUI::drawEventLog() {
     std::vector<std::string> log;
+    log.push_back("Event Log:");
+
+    size_t lines = m_cfg->ysize + 1;
+    auto& events = m_universe.getEvents();
+    auto it = events.end();
+
+    if(events.size() >= lines) {
+        std::advance(it, -lines);
+    } else {
+        it = events.begin();
+    }
+
+    while(it != events.end()) {
+        log.push_back(it->message);
+        it++;
+    }
+
     return log;
 }
 
 void TUI::drawBoard() {
     auto planets = drawPlanets();
+    auto log = drawEventLog();
+
+    std::string left,right;
 
     std::cout << "\n";
-    for(auto& line: planets) {
-        std::cout << line << "\n";
+
+    for(auto p=planets.begin(), l=log.begin(); p != planets.end() || l != log.end();) {
+        left = (p != planets.end()) ? *p++ : ""s;
+        right = (l != log.end()) ? *l++ : ""s;
+        std::cout << left << "\t\t" << right << "\n";
     }
+
     std::cout << "\n";
 }
 

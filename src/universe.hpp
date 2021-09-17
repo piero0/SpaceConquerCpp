@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <queue>
 #include <sstream>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 using ushort = unsigned short;
 using Position = std::pair<ushort, ushort>;
@@ -50,6 +52,7 @@ struct Event {
         REINFORCEMENTS,
         ATTACK_FAIL,
         ATTACK_OK,
+        TRANSPORT_CREATED,
         WIN,
         DOMINATION,
         DEFEAT
@@ -97,7 +100,7 @@ class Universe {
         bool isPlaying() const {return m_playing;}
         void setPlaying(bool state) {m_playing = state;}
         
-        std::unordered_map<Position, Planet, PositionHash> getPlanets() { return m_planets; }
+        std::unordered_map<Position, Planet, PositionHash>& getPlanets() { return m_planets; }
         std::vector<Transport>& getTransports() { return m_transports; }
 
         std::string getInitMsg();

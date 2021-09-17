@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <iterator>
+
 #include "universe.hpp"
 #include "tui_cmd.hpp"
 #include "tui_callbacks.hpp"

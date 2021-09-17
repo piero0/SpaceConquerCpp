@@ -30,6 +30,7 @@ Transport* Universe::makeTransport(Planet* src, Planet* dst, ushort ships) {
         return nullptr;
     }
     m_transports.push_back({calcDistance(src, dst), ships, dst, src});
+    m_events.push_back(Event(Event::Type::TRANSPORT_CREATED, &m_transports.back()));
     return &m_transports.back();
 }
 
@@ -66,7 +67,9 @@ void Universe::assignPlayers() {
 std::vector<Planet> Universe::getUserPlanets(ushort user_id) {
     std::vector<Planet> user_planets;
     for(auto& p: m_planets) {
-        user_planets.push_back(p.second);
+        if(p.second.owner == user_id) {
+            user_planets.push_back(p.second);
+        }
     }
     return user_planets;
 }
@@ -92,7 +95,7 @@ void Universe::generatePlanets() {
         Planet p;
         p.production = genprod(gen);
         p.position = generatePosition(genx, geny, gen);
-        p.name = std::to_string(p.position.first) + "x" + std::to_string(p.position.second);
+        p.name = positionToString(p.position);
 
         m_planets[p.position] = p;
     }
@@ -101,8 +104,9 @@ void Universe::generatePlanets() {
 }
 
 void Universe::land(Transport& t) { //jakas lepsza nazwa
-    if(t.source == t.destination) {
+    if(t.source->owner == t.destination->owner) {
         t.destination->ships += t.ships;
+        t.destination->ships_in_production += static_cast<float>(t.ships);
 
         m_events.push_back(Event(Event::Type::REINFORCEMENTS, &t));
         return;
@@ -112,6 +116,7 @@ void Universe::land(Transport& t) { //jakas lepsza nazwa
     if(dif > 0) {
         t.destination->owner = t.source->owner;
         t.destination->ships = dif;
+        t.destination->ships_in_production += static_cast<float>(t.ships);
 
         m_events.push_back(Event(Event::Type::ATTACK_OK, &t));
     } else {
@@ -127,7 +132,9 @@ void Universe::nextRound() {
         }
     }
 
-    std::remove_if(m_transports.begin(), m_transports.end(), [](Transport& t){ return t.distance <= 0; });
+    m_transports.erase(
+        std::remove_if(m_transports.begin(), m_transports.end(), [](Transport& t){ return t.distance <= 0; }),
+        m_transports.end());
 
     for(auto& p: m_planets) {
         p.second.nextRound();
@@ -153,12 +160,14 @@ Event::Event(Event::Type type, Transport* t) {
         message = "Congratulation, you won!";
         break;
     case Event::Type::DOMINATION:
-        message = "You have defated all opponents but there are still some planets to conquer";
+        message = "You have defeated all opponents but there are still some planets to conquer";
         break;
     case Event::Type::DEFEAT:
         message = "You have been defeated";
         break;
-    
+    case Event::Type::TRANSPORT_CREATED:
+        message = "Sent " + std::to_string(t->ships) + " ships from " + t->source->name + " to " + t->destination->name;
+        break;
     default:
         break;
     }
@@ -197,7 +206,7 @@ std::string Universe::getInitMsg() {
         msg << "Type 'newgame' to start a new game or 'load' to load saved one";
     } else {
         auto start_pos = positionToString(user_planets[0].position);
-        msg << "Round #1\nWelcome Konqueror, your starting planet is at " << start_pos;
+        msg << "Round #1\nWelcome Conqueror, your starting planet is at " << start_pos;
     }
 
     return msg.str();

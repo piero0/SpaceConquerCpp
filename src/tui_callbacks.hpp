@@ -24,15 +24,20 @@ class Callbacks {
         std::string quit(Args args);
         std::string next(Args args);
         std::string send(Args args);
+        
+        std::string planets(Args args);
+        std::string transports(Args args);
+
         std::string save(Args args);
         std::string load(Args args);
         std::string newgame(Args args);
+
         std::string help(Args args);
 
         std::string debug(Args args);
         std::string reset(Args args);
 
-        std::array<Command, 10> commands {
+        std::array<Command, 12> commands {
             Command("quit"s, &Callbacks::quit, "q"),
             Command("info"s, &Callbacks::info, "i"),
             Command("next"s, &Callbacks::next, "n"),
@@ -42,6 +47,8 @@ class Callbacks {
             Command("help"s, &Callbacks::help, "?"),
             Command("save"s, &Callbacks::save),
             Command("load"s, &Callbacks::load),
-            Command("newgame"s, &Callbacks::newgame)
+            Command("newgame"s, &Callbacks::newgame),
+            Command("planets"s, &Callbacks::planets, "p"),
+            Command("transports"s, &Callbacks::transports, "t"),
         };
 };

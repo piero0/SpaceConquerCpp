@@ -19,12 +19,12 @@ std::string Callbacks::info(Args args) {
     return tmp.str();
 }
 
-std::string Callbacks::quit(Args args) {
+std::string Callbacks::quit(Args) {
     m_universe->setPlaying(false);
-    return ""s;
+    return "Good bye"s;
 }
 
-std::string Callbacks::next(Args args) {
+std::string Callbacks::next(Args) {
     std::ostringstream tmp;
     m_universe->nextRound();
     tmp << "Round #" << m_universe->getRoundCount();
@@ -63,12 +63,12 @@ std::string Callbacks::send(Args args) {
         return "Failed to create transport";
     }
 
-    tmp << "Sent " << ships << " ships from " << src_pos << " to " << dst_pos << " ,distance: " << tr->distance;
+    tmp << "Sent " << ships << " ships from " << src_pos << " -> " << dst_pos << ", distance: " << tr->distance;
 
     return tmp.str();
 }
 
-std::string Callbacks::help(Args args) {
+std::string Callbacks::help(Args) {
     std::ostringstream tmp;
     tmp << "Commands:\n"
         << "info send next quit help\n"
@@ -76,32 +76,36 @@ std::string Callbacks::help(Args args) {
     return tmp.str();
 }
 
-std::string Callbacks::debug(Args args) {
+std::string Callbacks::debug(Args) {
     std::ostringstream tmp;
 
     auto cfg = m_universe->getConfig();
     tmp << "Map size " << cfg->xsize << "x" << cfg->ysize << " planets: " << cfg->planets_num << "\n";
 
+    tmp << "Planets:\n";
     for(auto& pl: m_universe->getPlanets()) {
         auto p = pl.second;
         tmp << p.name << " owner: "s << p.owner << " ships:"s << p.ships << " prod: "s << p.production << "\n";
     }
+    tmp << "Transports:\n";
     for(auto& tr: m_universe->getTransports()) {
-        tmp << "transport\n";
+        tmp << tr.destination->name << " dist: " << tr.distance << " ships: " << tr.ships << "\n";
     }
+
+    tmp << "Events count " << m_universe->getEvents().size() << "\n";
     return tmp.str();
 }
 
-std::string Callbacks::reset(Args args) {
+std::string Callbacks::reset(Args) {
     m_universe->generatePlanets();
     return "Game restarted\n"s + m_universe->getInitMsg();
 }
 
-std::string Callbacks::save(Args args) {
+std::string Callbacks::save(Args) {
     return "Not implemented"s;
 }
 
-std::string Callbacks::load(Args args) {
+std::string Callbacks::load(Args) {
     return "Not implemented"s;
 }
 
@@ -144,4 +148,23 @@ std::string Callbacks::newgame(Args args) {
     m_universe->generatePlanets();
 
     return m_universe->getInitMsg();
+}
+
+std::string Callbacks::planets(Args) {
+    std::ostringstream tmp;
+    auto planets = m_universe->getUserPlanets(1);
+    for(auto& p: planets) {
+        tmp << p.name << " ships:"s << p.ships << " prod: "s << p.production << "\n";
+    }
+    return tmp.str();
+}
+
+std::string Callbacks::transports(Args) {
+    std::ostringstream tmp;
+    for(auto& t: m_universe->getTransports()) {
+        if(t.source->owner == 1) {
+            tmp << t.source->name << " -> " << t.destination->name << " ships: " << t.ships << " dist: " << t.distance << "\n";
+        }
+    }
+    return tmp.str();
 }
