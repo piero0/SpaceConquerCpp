@@ -118,3 +118,23 @@ Event::Event(Event::Type type, Transport& t) {
         break;
     }
 }
+
+Position Universe::convertToPosition(const std::string& location) {
+    //Format should be column (one letter), row (a number)
+    //e.g. A3, G10
+
+    Position pos {std::numeric_limits<ushort>::max(), std::numeric_limits<ushort>::max()};
+
+    auto col = std::toupper(location[0]);
+    if(col >= 'A' && col <= 'Z') {
+        pos.first = static_cast<ushort>(col - 'A');
+    }
+
+    auto row = std::atoi(location.substr(1).c_str());
+
+    if(std::to_string(row) == location.substr(1)) {
+        pos.second = row;
+    }
+
+    return pos;
+}

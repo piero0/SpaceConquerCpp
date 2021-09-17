@@ -69,7 +69,6 @@ class Universe {
         ushort calcDistance(Planet* src, Planet* dst);
         void makeTransport(Planet* src, Planet* dst, ushort ships);
         Planet* getPlanetByPos(const Position& pos);
-        Position convertToPosition(const std::string& pos);
         void generatePlanets();
         Position generatePosition(std::uniform_int_distribution<>& gx, std::uniform_int_distribution<>& gy, std::mt19937& gen);
         void assignPlayers();
@@ -80,4 +79,6 @@ class Universe {
         
         bool isPlaying() const {return m_playing;}
         void setPlaying(bool state) {m_playing = state;}
+
+        Position convertToPosition(const std::string& location);
 };

@@ -1,5 +1,9 @@
 #include "tui_cmd.hpp"
 
+TUICmds::TUICmds(Callbacks* cb): m_callbacks(cb) {
+    addCommands(m_callbacks->commands.begin(), m_callbacks->commands.end());
+}
+
 bool TUICmds::match(std::string& cmd, Command& c) {
     if(cmd.length() == 0) return false;
 
@@ -23,15 +27,23 @@ Args TUICmds::getArgs(std::string& cmd) {
     return args;
 }
 
-void TUICmds::parseCommandLine(std::string& cmd) {
+std::string TUICmds::parseCommandLine(std::string& cmd) {
+    auto response {""s};
     for(auto& c: m_commands) {
         auto args = getArgs(cmd);
         if(match(args[0], c)) {
-            c.callback(args);
+            response = std::invoke(c.callback, m_callbacks, args);
         }
     }
+    return response;
 }
 
 void TUICmds::addCommand(Command& cmd) {
     m_commands.push_back(cmd);
+}
+
+template<class Iter> void TUICmds::addCommands(Iter begin, Iter end) {
+    while(begin != end) {
+        m_commands.push_back(*begin++);
+    }
 }

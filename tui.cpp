@@ -15,8 +15,8 @@ using namespace std::string_literals;
   A B C D E F G H
 */
 
-
-TUI::TUI(Universe& universe):m_universe(universe) {
+TUI::TUI(Universe& universe, Callbacks* cbs):
+    m_universe(universe), m_cmds(cbs) {
     m_cfg = universe.getConfig();
     m_xsize = m_cfg.xsize;
     m_ysize = m_cfg.ysize;
@@ -66,59 +66,12 @@ void TUI::drawBoard() {
     }
 }
 
-Position TUI::convertToPosition(const std::string& location) {
-    //Format should be column (one letter), row (a number)
-    //e.g. A3, G10
-
-    Position pos {std::numeric_limits<ushort>::max(), std::numeric_limits<ushort>::max()};
-
-    auto col = std::toupper(location[0]);
-    if(col >= 'A' && col <= 'Z') {
-        pos.first = static_cast<ushort>(col - 'A');
-    }
-
-    auto row = std::atoi(location.substr(1).c_str());
-
-    if(std::to_string(row) == location.substr(1)) {
-        pos.second = row;
-    }
-
-    return pos;
-}
-
-void TUI::processCommand(std::string& cmd) {
-    if(cmd == "quit" || cmd[0] == 'q') {
-        m_playing = false;
-    } else if(cmd[0] == 'i') {
-        auto len = cmd.length();
-        if(len < 4) {
-            std::cout << "missing planet's position e.g. info A1\n";
-            return;
-        }
-
-        auto loc = cmd.substr(2);
-        auto pos = convertToPosition(loc);
-        auto p = m_universe.getPlanetByPos(pos);
-        if(p == nullptr) {
-            std::cout << "No planet found at " << loc << "\n";
-            return;
-        }
-        
-        //show ships and production only to owner
-        std::cout << p->name << " owner: " << p->owner << " ships:" << p->ships << " prod: " << p->production << "\n";
-    } else if(cmd == "next" || cmd[0] == 'n') {
-        m_universe.nextRound();
-    } else if(cmd == "send" || cmd[0] == 's') {
-
-    }
-}
-
 void TUI::mainLoop() {
-    std::string cmd {""s};
+    std::string cmd {""s}, response {""s};
     while(m_universe.isPlaying()) {
         drawBoard();
-        std::cout << "> ";
+        std::cout << response << "\n> ";
         std::getline(std::cin, cmd);
-        processCommand(cmd);
+        response = m_cmds.parseCommandLine(cmd);
     }
 }

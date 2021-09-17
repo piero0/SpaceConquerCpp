@@ -1,20 +1,19 @@
 #pragma once
 #include <string>
 #include <vector>
-
-using Args = std::vector<std::string>;
-using Callback = void (*)(Args);
-
-struct Command {
-    std::string name = "???";
-    Callback callback;
-};
+#include <functional>
+#include "tui_callbacks.hpp"
 
 class TUICmds {
     std::vector<Command> m_commands;
+    Callbacks* m_callbacks = nullptr;
+
+    bool match(std::string& cmd, Command& c);
+    Args getArgs(std::string& cmd);
+
     public:
-        void parseCommandLine(std::string& cmd);
-        bool match(std::string& cmd, Command& c);
-        Args getArgs(std::string& cmd);
+        TUICmds(Callbacks* cb);
+        std::string parseCommandLine(std::string& cmd);
         void addCommand(Command& cmd);
+        template<class Iter> void addCommands(Iter begin, Iter end);
 };

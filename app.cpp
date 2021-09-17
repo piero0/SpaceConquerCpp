@@ -4,7 +4,9 @@ int main() {
     Config cfg;
     Universe u(cfg);
     u.generatePlanets();
-    TUI t(u);
+
+    Callbacks cbs(&u);
+    TUI t(u, &cbs);
 
     t.mainLoop();
 
