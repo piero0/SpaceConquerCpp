@@ -81,4 +81,6 @@ class Universe {
         void setPlaying(bool state) {m_playing = state;}
 
         Position convertToPosition(const std::string& location);
+        std::unordered_map<Position, Planet, PositionHash> getPlanets() { return m_planets; }
+        std::vector<Transport> getTransports() { return m_transports; }
 };

@@ -127,7 +127,7 @@ Position Universe::convertToPosition(const std::string& location) {
 
     auto col = std::toupper(location[0]);
     if(col >= 'A' && col <= 'Z') {
-        pos.first = static_cast<ushort>(col - 'A');
+        pos.first = static_cast<ushort>(col - 'A' + 1);
     }
 
     auto row = std::atoi(location.substr(1).c_str());

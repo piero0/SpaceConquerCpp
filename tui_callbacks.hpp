@@ -23,11 +23,15 @@ class Callbacks {
         std::string quit(Args args);
         std::string next(Args args);
         std::string send(Args args);
+        std::string debug(Args args);
+        std::string help(Args args);
 
-        std::array<Command, 4> commands {
+        std::array<Command, 6> commands {
             Command("quit"s, &Callbacks::quit),
             Command("info"s, &Callbacks::info),
             Command("next"s, &Callbacks::next),
-            Command("send"s, &Callbacks::send)
+            Command("send"s, &Callbacks::send),
+            Command("debug"s, &Callbacks::debug),
+            Command("help"s, &Callbacks::help),
         };
 };

@@ -29,3 +29,22 @@ std::string Callbacks::next(Args args) {
 std::string Callbacks::send(Args args) {
     return "Send not implemented yet"s;
 }
+
+std::string Callbacks::help(Args args) {
+    std::ostringstream tmp;
+    tmp << "Commands:\n"
+        << "info send next quit";
+    return tmp.str();
+}
+
+std::string Callbacks::debug(Args args) {
+    std::ostringstream tmp;
+    for(auto& pl: m_universe->getPlanets()) {
+        auto p = pl.second;
+        tmp << p.name << " owner: "s << p.owner << " ships:"s << p.ships << " prod: "s << p.production << "\n";
+    }
+    for(auto& tr: m_universe->getTransports()) {
+        tmp << "transport\n";
+    }
+    return tmp.str();
+}
