@@ -7,5 +7,7 @@ executable('SpaceKonquer',
            'tui.cpp',
            'app.cpp',
            'tui_cmd.cpp',
-           'tui_callbacks.cpp', dependencies: dependency('spdlog')
+           'tui_callbacks.cpp', 
+           'saver.cpp',
+           dependencies: dependency('spdlog')
            )

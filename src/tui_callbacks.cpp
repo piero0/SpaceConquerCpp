@@ -15,7 +15,7 @@ std::string Callbacks::info(Args args) {
     
     //show ships and production only to owner
     std::ostringstream tmp; 
-    tmp << m_universe->positionToString(p->position) << " owner: "s << p->owner << " ships:"s << p->ships << " prod: "s << p->production;
+    tmp << m_universe->positionToString(p->position) << " owner: "s << static_cast<ushort>(p->owner) << " ships:"s << p->ships << " prod: "s << p->production;
     return tmp.str();
 }
 
@@ -81,11 +81,12 @@ std::string Callbacks::debug(Args) {
 
     auto cfg = m_universe->getConfig();
     tmp << "Map size " << cfg->xsize << "x" << cfg->ysize << " planets: " << cfg->planets_num << "\n";
+    tmp << "Round #" << m_universe->getRoundCount() << "\n";
 
     tmp << "Planets:\n";
     for(auto& pl: m_universe->getPlanets()) {
         auto p = pl.second;
-        tmp << p.name << " owner: "s << p.owner << " ships:"s << p.ships << " prod: "s << p.production << "\n";
+        tmp << p.name << " owner: "s << static_cast<ushort>(p.owner) << " ships:"s << p.ships << " prod: "s << p.production << "\n";
     }
     tmp << "Transports:\n";
     for(auto& tr: m_universe->getTransports()) {
@@ -101,12 +102,36 @@ std::string Callbacks::reset(Args) {
     return "Game restarted\n"s + m_universe->getInitMsg();
 }
 
-std::string Callbacks::save(Args) {
-    return "Not implemented"s;
+std::string Callbacks::save(Args args) {
+    if(args.size() != 2) {
+        return "Invalid format:\n\t save <name> e.g. save mygame";
+    }
+
+    auto filename = args[1] + ".save"s;
+    Saver s;
+    auto save_ok = s.save(m_universe, filename);
+
+    if(!save_ok) {
+        return "Could not save the game"s;
+    }
+
+    return "Game saved as "s + filename;
 }
 
-std::string Callbacks::load(Args) {
-    return "Not implemented"s;
+std::string Callbacks::load(Args args) {
+    if(args.size() != 2) {
+        return "Invalid format:\n\t load <name> e.g. load mygame";
+    }
+
+    auto filename = args[1] + ".save"s;
+    Saver s;
+    auto load_ok = s.load(m_universe, filename);
+
+    if(!load_ok) {
+        return "Could not load the game"s;
+    }
+
+    return "Game loaded"s;
 }
 
 std::string Callbacks::newgame(Args args) {
@@ -152,7 +177,7 @@ std::string Callbacks::newgame(Args args) {
 
 std::string Callbacks::planets(Args) {
     std::ostringstream tmp;
-    auto planets = m_universe->getUserPlanets(1);
+    auto planets = m_universe->getUserPlanets(Owner::YOU);
     for(auto& p: planets) {
         tmp << p.name << " ships:"s << p.ships << " prod: "s << p.production << "\n";
     }
@@ -162,7 +187,7 @@ std::string Callbacks::planets(Args) {
 std::string Callbacks::transports(Args) {
     std::ostringstream tmp;
     for(auto& t: m_universe->getTransports()) {
-        if(t.source->owner == 1) {
+        if(t.source->owner == Owner::YOU) {
             tmp << t.source->name << " -> " << t.destination->name << " ships: " << t.ships << " dist: " << t.distance << "\n";
         }
     }

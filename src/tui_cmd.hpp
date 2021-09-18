@@ -13,7 +13,7 @@ class TUICmds {
 
     Command* findCommand(std::string& cmd);
     Args splitArgs(std::string& cmd);
-
+    
     public:
         TUICmds(Callbacks* cb);
         std::string parseCommandLine(std::string& cmdline);

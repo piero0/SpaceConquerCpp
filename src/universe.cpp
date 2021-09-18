@@ -52,7 +52,7 @@ Position Universe::generatePosition(std::uniform_int_distribution<>& gx, std::un
 
 void Universe::assignPlayers() {
     size_t idx = 0;
-    ushort ids[] = {1, 2}; // na razie tylko dwoch playerow 1 - user, 2 - cpu
+    Owner ids[] = {Owner::YOU, Owner::CPU1}; // only 2 players for now
 
     for(auto& p: m_planets) {
         p.second.owner = ids[idx++];
@@ -64,10 +64,10 @@ void Universe::assignPlayers() {
     }
 }
 
-std::vector<Planet> Universe::getUserPlanets(ushort user_id) {
+std::vector<Planet> Universe::getUserPlanets(Owner owner) {
     std::vector<Planet> user_planets;
     for(auto& p: m_planets) {
-        if(p.second.owner == user_id) {
+        if(p.second.owner == owner) {
             user_planets.push_back(p.second);
         }
     }
@@ -146,6 +146,8 @@ void Universe::nextRound() {
 }
 
 Event::Event(Event::Type type, Transport* t) {
+    this->type = type;
+
     switch(type) {
     case Event::Type::REINFORCEMENTS:
         message = std::to_string(t->ships) + " ships arrived on " + t->destination->name;
@@ -201,7 +203,7 @@ std::string Universe::positionToString(const Position& pos) {
 
 std::string Universe::getInitMsg() {
     std::ostringstream msg;
-    auto user_planets = getUserPlanets(1);
+    auto user_planets = getUserPlanets(Owner::YOU);
     if(user_planets.size() == 0) {
         msg << "Type 'newgame' to start a new game or 'load' to load saved one";
     } else {
@@ -213,5 +215,30 @@ std::string Universe::getInitMsg() {
 }
 
 void Universe::checkGameEnded() {
-    //todo
+    std::unordered_map<Owner, ushort> players;
+    for(auto& p: m_planets) {
+        players[p.second.owner]++;
+    }
+
+    bool free_planets = false;
+
+    if(players.find(Owner::STRAY) != players.end()) {
+        players.erase(Owner::STRAY);
+        free_planets = true;
+    }
+
+    if(players.size() == 1) {
+        if(players.begin()->first == Owner::YOU) {
+            if(free_planets and !m_free_play) {
+                m_events.push_back(Event(Event::Type::DOMINATION, nullptr));
+                m_free_play = true;
+            } else {
+                m_events.push_back(Event(Event::Type::WIN, nullptr));
+                m_playing = false;
+            }
+        } else {
+            m_events.push_back(Event(Event::Type::DEFEAT, nullptr));
+            m_playing = false;
+        }
+    }
 }

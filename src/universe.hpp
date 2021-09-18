@@ -28,13 +28,19 @@ struct Config {
     ushort xsize = 10, ysize = 10;
 };
 
+enum class Owner {
+    STRAY,
+    YOU,
+    CPU1
+};
+
 struct Planet {
     std::string name {""};
     Position position {0, 0};
     float production = 1.0f;
     float ships_in_production = 0.0f;
     ushort ships = 0;
-    ushort owner = 0;
+    Owner owner = Owner::STRAY;
 
     void nextRound();
     bool sendShips(ushort ships_num);
@@ -57,9 +63,11 @@ struct Event {
         DOMINATION,
         DEFEAT
     };
-    Type type;
+
+    Event::Type type;
     std::string message;
 
+    Event() {}
     Event(Event::Type type, Transport* t);
 };
 
@@ -70,6 +78,7 @@ class Universe {
     Config m_cfg;
     ushort m_round = 1;
     bool m_playing = true;
+    bool m_free_play = false; //playing after defeating all oponents
 
     public:
         Universe(const Config& cfg);
@@ -84,7 +93,7 @@ class Universe {
 
         Planet* getPlanetByPos(const Position& pos);
         Planet* getPlanetAt(const std::string& loc);
-        std::vector<Planet> getUserPlanets(ushort user_id);
+        std::vector<Planet> getUserPlanets(Owner owner);
 
         void generatePlanets();
         Position generatePosition(std::uniform_int_distribution<>& gx, std::uniform_int_distribution<>& gy, std::mt19937& gen);
@@ -96,6 +105,9 @@ class Universe {
         void land(Transport& t);
         void nextRound();
         ushort getRoundCount() const {return m_round;}
+        void setRoundCount(ushort rnd) {m_round = rnd;}
+        bool isFreePlay() const {return m_free_play;}
+        void setFreePlay(bool s) {m_free_play = s;}
         
         bool isPlaying() const {return m_playing;}
         void setPlaying(bool state) {m_playing = state;}

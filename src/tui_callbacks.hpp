@@ -1,5 +1,6 @@
 #pragma once
 #include "universe.hpp"
+#include "saver.hpp"
 
 class Callbacks;
 
@@ -47,7 +48,7 @@ class Callbacks {
             Command("help"s, &Callbacks::help, "?"),
             Command("save"s, &Callbacks::save),
             Command("load"s, &Callbacks::load),
-            Command("newgame"s, &Callbacks::newgame),
+            Command("newgame"s, &Callbacks::newgame, "new"),
             Command("planets"s, &Callbacks::planets, "p"),
             Command("transports"s, &Callbacks::transports, "t"),
         };
