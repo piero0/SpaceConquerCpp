@@ -1,2 +1,2 @@
-# Klon gry z Linuxa podejście już sam nie wiem które
-Zobaczmy w ile czasu jestem w stantie napisać taką grę konsolową
+# Klon gry z Linuxa
+Podejście już sam nie wiem które. Zobaczmy w ile czasu jestem w stanie napisać taką grę konsolową.
